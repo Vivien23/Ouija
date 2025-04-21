@@ -53,26 +53,51 @@ async def on_message(message):
         #Voir si le message vient de chan morts ou vivants
         from_v = message.channel.id == id_chan_v
         from_m = message.channel.id == id_chan_m
-        if from_v:
-            prov, dest = "**Vivants :** {}", bot.get_channel(id_chan_m)
-        if from_m:
-            prov, dest = "**Morts :** {}", bot.get_channel(id_chan_v)
-        if not(from_v or from_m):
-            #Rétablit l'utilisation des commandes si on est dans un channel sans joueur
-            await(bot.process_commands(message))
-            return
+        if from_v or from_m:
+            if from_v:
+                prov, dest = "**Vivants :** {}", bot.get_channel(id_chan_m)
+            if from_m:
+                prov, dest = "**Morts :** {}", bot.get_channel(id_chan_v)
 
-        #L'envoyer dans buffer puis attendre  
-        await(buffer.send(prov.format(message.content)))
-        await(sleep(5)) #Délai entre l'envoi du message et sa réception par l'autre groupe
-        #L'envoyer dans l'autre chan
-        await(dest.send(message.content))
+            #L'envoyer dans buffer puis attendre  
+            await(buffer.send(prov.format(message.content)))
+            await(sleep(5)) #Délai entre l'envoi du message et sa réception par l'autre groupe
+            
+            #L'envoyer dans l'autre chan
+            await(dest.send(message.content))
+
+    #Rétablit l'utilisation des commandes si l'auteur est un MJ
+    is_mj = False 
+    for role in message.author.roles:
+        if role.id == 1359560536760516841:
+            is_mj = True
+    if is_mj:
+        await(bot.process_commands(message))
 
 @bot.command()
 async def ping(ctx):
-    await ctx.send("pong")
+    #Envoie un message à la main
+    await(ctx.send("pong"))
 
+@bot.command()
+async def send(ctx):
+    #Envoie un message à la main
+    pass
 
+@bot.command()
+async def stop(ctx):
+    #Empêche un message d'être envoyé
+    pass
+
+@bot.command()
+async def set_sleep(ctx):
+    #Change le temps qu'un message passe dans le buffer
+    pass
+
+@bot.command()
+async def set_timer(ctx):
+    #Choisi la valeur du timer d'obfuscation
+    pass
 
 
 bot.run(TOKEN)
