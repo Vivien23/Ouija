@@ -1,5 +1,5 @@
 import discord
-from asyncio import sleep
+import asyncio
 from discord.ext import commands
 
 ## Get the bot's token from file token_list.txt
@@ -29,10 +29,12 @@ bot = commands.Bot("!", intents=bot_intents)
 ## Declaring channel ids and other constants
 id_chan_v = 1359543316235944282
 id_chan_m = 1359543772928540923
-
 id_buffer = 1363906704810578253
+
+id_mj = 1359560536760516841
+
+
 bot_status = {"buffer_chan": None, "awake" : True, "passing" : True}
-buffer = None
 
 ## Defining events and bot's behaviour
 
@@ -50,11 +52,14 @@ async def on_ready():
 async def on_message(message):
     buffer = bot_status["buffer_chan"]
     
+    #Rétablit l'utilisation des commandes si l'auteur est un MJ
+    if sum([role.id == id_mj for role in message.author.roles]):
+        await(bot.process_commands(message))
 
-    if message.author == bot.user:
+    if message.author == bot.user or not(bot_status["awake"]):
         return
+
     if type(message.channel) is discord.TextChannel:
-    
         #Voir si le message vient de chan morts ou vivants
         from_v = message.channel.id == id_chan_v
         from_m = message.channel.id == id_chan_m
@@ -66,18 +71,13 @@ async def on_message(message):
 
             #L'envoyer dans buffer puis attendre  
             await(buffer.send(prov.format(message.content)))
-            await(sleep(5)) #Délai entre l'envoi du message et sa réception par l'autre groupe
-            
-            #L'envoyer dans l'autre chan
-            await(dest.send(message.content))
+            await(asyncio.sleep(10)) #Délai entre l'envoi du message et sa réception par l'autre groupe
 
-    #Rétablit l'utilisation des commandes si l'auteur est un MJ
-    is_mj = False 
-    for role in message.author.roles:
-        if role.id == 1359560536760516841:
-            is_mj = True
-    if is_mj:
-        await(bot.process_commands(message))
+            #L'envoyer dans l'autre chan
+            if bot_status["awake"]:
+                await(dest.send(message.content))
+    pass
+
 
 @bot.command()
 async def ping(ctx):
@@ -92,11 +92,13 @@ async def send(ctx):
 @bot.command()
 async def stop(ctx):
     #Empêche un message d'être envoyé
+    bot_status["awake"] = False
     pass
 
 @bot.command()
-async def set_sleep(ctx):
-    #Change le temps qu'un message passe dans le buffer
+async def go(ctx):
+    #Relance l'envoi des messages
+    bot_status["awake"] = True
     pass
 
 @bot.command()
