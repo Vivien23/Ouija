@@ -1,5 +1,5 @@
 import discord
-from asyncio import sleep 
+from asyncio import sleep
 from discord.ext import commands
 
 ## Get the bot's token from file token_list.txt
@@ -22,13 +22,16 @@ token_file.close()
 ## Declaring intents
 bot_intents = discord.Intents.default()
 bot_intents.message_content = True
+
 bot = commands.Bot("!", intents=bot_intents)
+
 
 ## Declaring channel ids and other constants
 id_chan_v = 1359543316235944282
 id_chan_m = 1359543772928540923
 
 id_buffer = 1363906704810578253
+bot_status = {"buffer_chan": None, "awake" : True, "passing" : True}
 buffer = None
 
 ## Defining events and bot's behaviour
@@ -37,14 +40,16 @@ buffer = None
 @bot.event
 async def on_ready():
     #J'ai envie d'initialiser buffer ici, et de le passer en arg à on_message
+    bot_status["buffer_chan"] = bot.get_channel(id_buffer)
     print("I'm ready")
-    pass
+
 
 
 #On message event, that's the fun part
 @bot.event
 async def on_message(message):
-    buffer = bot.get_channel(id_buffer)
+    buffer = bot_status["buffer_chan"]
+    
 
     if message.author == bot.user:
         return
